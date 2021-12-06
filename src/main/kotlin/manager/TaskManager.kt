@@ -36,10 +36,10 @@ class AddProcessDefault(private val maxCapacity:Long) : AddProcess {
 
     override val stateAllProcess: MutableSet<SOProcess> = HashSet<SOProcess>()
     override fun add(process: SOProcess): Boolean {
-        return lockWrite{ if(stateAllProcess.size < maxCapacity) {
+        return if(stateAllProcess.size < maxCapacity) {
             stateAllProcess.add(process)
             true
-        } else false }
+        } else false
     }
 }
 
@@ -47,11 +47,9 @@ class AddProcessFiFo(private val maxCapacity:Long) : AddProcess {
 
     override val stateAllProcess: MutableSet<SOProcess> = LinkedHashSet<SOProcess>()
     override fun add(process: SOProcess): Boolean {
-        lockWrite {
-            stateAllProcess.add(process)
-            val first = stateAllProcess.first()
-            if(stateAllProcess.size > maxCapacity) stateAllProcess.remove(first);
-        }
+        stateAllProcess.add(process)
+        val first = stateAllProcess.first()
+        if(stateAllProcess.size > maxCapacity) stateAllProcess.remove(first);
         return true
     }
 }
@@ -65,8 +63,7 @@ class AddProcessPriority(private val maxCapacity:Long) : AddProcess {
 
     }
     override fun add(process: SOProcess): Boolean {
-        return lockWrite {
-            if(stateAllProcess.size < maxCapacity) stateAllProcess.add(process)
+        return if(stateAllProcess.size < maxCapacity) stateAllProcess.add(process)
             else {
                 val lessPriorityProcess =stateAllProcess.first()
                 if(process.priority > lessPriorityProcess.priority) {
@@ -75,7 +72,7 @@ class AddProcessPriority(private val maxCapacity:Long) : AddProcess {
                 } else false
             }
         }
-    }
+
 }
 
 enum class SortedBy {
@@ -86,7 +83,9 @@ enum class SortedBy {
 
 class TaskManager(private val processSO: AddProcess = AddProcessDefault(MAX_CAPACITY)) {
 
-    fun add(process: SOProcess): Boolean = processSO.add(process)
+    fun add(process: SOProcess): Boolean = lockWrite{
+        processSO.add(process)
+    }
     fun kill(process: SOProcess): Boolean  = lockWrite { processSO.stateAllProcess.remove(process) }
     fun killAll(): Unit = lockWrite {
         processSO.stateAllProcess.clear()

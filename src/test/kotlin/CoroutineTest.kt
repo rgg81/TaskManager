@@ -135,11 +135,13 @@ class TaskManagerMultiProcessingTest {
                     assertDoesNotThrow {
                         addSOProcess(taskManagerPriority)
                         val listProcessSO = taskManagerPriority.list()
-                        taskManagerPriority.kill(listProcessSO.last())
+                        if(listProcessSO.isNotEmpty()) taskManagerPriority.kill(listProcessSO.last())
                         taskManagerPriority.killGroup(Priority.LOW)
+                        taskManagerPriority.killAll()
                     }
                 }
             }
     }
+
 
 }

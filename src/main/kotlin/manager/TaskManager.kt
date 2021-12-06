@@ -88,7 +88,9 @@ class TaskManager(private val processSO: AddProcess = AddProcessDefault(MAX_CAPA
 
     fun add(process: SOProcess): Boolean = processSO.add(process)
     fun kill(process: SOProcess): Boolean  = lockWrite { processSO.stateAllProcess.remove(process) }
-    fun killAll(): Unit = processSO.stateAllProcess.clear()
+    fun killAll(): Unit = lockWrite {
+        processSO.stateAllProcess.clear()
+    }
     fun killGroup(priority: Priority): Boolean = lockWrite {
         processSO.stateAllProcess.removeIf { it.priority == priority }
     }
